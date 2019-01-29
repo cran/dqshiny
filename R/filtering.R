@@ -1,8 +1,8 @@
 #' @author richard.kunze
-get_filters <- function(input, context) {
-  els <- grep(paste0("^filter_", context), names(input), value = TRUE)
+get_filters <- function(input) {
+  els <- grep("^filter", names(input), value = TRUE)
   vals <- lapply(els, function(x) input[[x]])
-  names(vals) <- gsub(paste0("^filter_", context, "_"), "", els)
+  names(vals) <- gsub("^filter-", "", els)
   vals
 }
 
@@ -24,9 +24,8 @@ text_filter <- function(df, values) {
   values <- unlist(values)
   if (!is.null(names(values))) {
     values <- values[match(names(df), names(values))]
-  } else {
-    values[values == ""] <- NA
   }
+  values[values == ""] <- NA
   if (all(is.na(values))) return(df)
   return(text_filter_rec(df, values, seq(nrow(df))))
 }

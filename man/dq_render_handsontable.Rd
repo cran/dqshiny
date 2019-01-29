@@ -10,7 +10,8 @@ dq_handsontable_output(id, width = 12L, offset = 0L)
 dq_render_handsontable(id, data, context = NULL, filters = "T",
   page_size = 25L, reset = TRUE, sorting = NULL, columns = NULL,
   width_align = FALSE, horizontal_scroll = FALSE, table_param = NULL,
-  cols_param = NULL, col_param = NULL, cell_param = NULL)
+  cols_param = NULL, col_param = NULL, cell_param = NULL,
+  session = shiny::getDefaultReactiveDomain())
 }
 \arguments{
 \item{id}{id of the element}
@@ -20,17 +21,19 @@ dq_render_handsontable(id, data, context = NULL, filters = "T",
 \item{offset}{optional offset of the column}
 
 \item{data}{data to show in the table, should be a data.frame'ish object, can
-also be reactive or a reactiveValues object holding the data under the given
-id (e.g. myReactiveValues[[id]] <- data). In case of reactiveValues, those
-will always be in line with user inputs.}
+also be reactive(Val) or a reactiveValues object holding the data under the
+given id (e.g. myReactiveValues[[id]] <- data). In case of reactiveVal(ues)
+data will always be in sync with user inputs.}
 
 \item{context}{the context used to specify all ui elements used for this
-table, can be omitted which ends up in a randomly generated context}
+table, can be omitted which ends up in a randomly generated context
+NOTE: this parameter is deprecated and will be removed soon}
 
 \item{filters}{optional character vector, adds filters for each column,
 values must be one of "Text", "Select", "Range", "Date", "Auto" or "" (can be
 abbreviated) to add a Text-, Select-, Range-, DateRange-, AutocompleteInput
-or none, vectors of length one will add a filter of this type for each column}
+or none, vectors of length one will add a filter of this type for each column
+and NA will try to guess proper filters}
 
 \item{page_size}{optional integer, number of items per page, can be one of
 10, 25, 50, 100 or any other value(s) which will be added to this list, first
@@ -51,7 +54,7 @@ in combination with reactive values, which will still hold all the data}
 should only be used with either horizontal_scroll, stretchH = "all" or a
 table fitting in its output element}
 
-\item{horizontal_scroll}{optional boolean to scroll the filterrow according
+\item{horizontal_scroll}{optional boolean to scroll the filter row according
 to the hot table, especially useful for tables with many columns}
 
 \item{table_param}{optional list, specify parameters to hand to rhandsontable
@@ -65,6 +68,8 @@ rhandsontable col elements}
 
 \item{cell_param}{optional list of lists to specify parameters to hand to
 rhandsontable cells}
+
+\item{session}{shiny session object}
 }
 \value{
 dq_handsontable_output: fluidRow containing the output fields
@@ -97,7 +102,7 @@ shinyApp(
     data <- data.frame(A = rep(hw, 500), B = hw[c(2,3,4,1)],
       C = 1:500, D = Sys.Date() - 0:499, stringsAsFactors = FALSE)
     dq_render_handsontable("randomTable", data,
-      filters = c("S", "T", "R", "D"), sorting = c(dir = "up", col = "B"),
+      filters = c("A", NA, NA, NA), sorting = c(dir = "up", col = "B"),
       page_size = c(17L, 5L, 500L, 1000L), width_align = TRUE,
       col_param = list(list(col = 1L, type = "dropdown", source = letters)),
       cell_param = list(list(row = 2:9, col = 1:2, readOnly = TRUE))

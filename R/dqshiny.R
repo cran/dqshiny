@@ -5,8 +5,10 @@
 #' autocomplete input, rhandsontable extensions for filtering and paging and
 #' much more.
 #'
-#' @section Section: some more info
-#'   TO DO document the package!!
+#' @details There is a demo 'dqshiny-base-features' showing some of the
+#' functionalities provided in this package. Furthermore you can have a look at
+#' the \href{https://github.com/daqana/dqshiny}{github page} for examples and
+#' additional information.
 #'
 #' @docType package
 #' @name dqshiny
@@ -59,4 +61,42 @@ jqueryui_dep <- htmltools::htmlDependency(
 
 not_null <- function(vec) {
   vec[!vapply(vec, is.null, TRUE)]
+}
+
+create_test_session <- function(id, input, output) {
+  session <- as.environment(list(
+    ns = shiny::NS(id),
+    sendInputMessage = function(inputId, message) {
+      session$lastInputMessages = append(
+        session$lastInputMessages, list(list(id = inputId, message = message))
+      )
+    },
+    sendCustomMessage = function(type, message) {
+      session$lastCustomMessages = append(
+        session$lastCustomMessages, list(list(type = type, message = message))
+      )
+    },
+    input = input,
+    output = output
+  ))
+  session
+}
+
+dq_NS <- function(namespace, ...) {
+  if (length(namespace) == 0) ns_prefix <- character(0)
+  else ns_prefix <- paste(namespace, collapse = shiny::ns.sep)
+  f <- function(...) {
+    ids <- list(...)
+    if (length(ids) == 0)
+      return(ns_prefix)
+    if (length(ns_prefix) == 0)
+      return(ids[[1]])
+    do.call(paste, append(list(ns_prefix, sep = ns.sep), ids))
+  }
+  ids <- list(...)
+  if (length(ids) == 0) {
+    f
+  } else {
+    f(...)
+  }
 }
