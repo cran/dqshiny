@@ -11,8 +11,8 @@
 #' @rdname dq_render_handsontable
 #' @export
 dq_handsontable_output <- function(id, width = 12L, offset = 0L) {
-  requireNamespace("rhandsontable")
-  requireNamespace("shiny")
+  requireNamespace("rhandsontable", quietly = TRUE)
+  requireNamespace("shiny", quietly = TRUE)
   if (is.null(id)) return(NULL)
   ns <- dq_NS(id)
   shiny::fluidRow(shiny::column(
@@ -41,11 +41,12 @@ dq_handsontable_output <- function(id, width = 12L, offset = 0L) {
 #' @param context the context used to specify all ui elements used for this
 #' table, can be omitted which ends up in a randomly generated context
 #' NOTE: this parameter is deprecated and will be removed soon
-#' @param filters optional character vector, adds filters for each column,
-#' values must be one of "Text", "Select", "Range", "Date", "Auto" or "" (can be
-#' abbreviated) to add a Text-, Select-, Range-, DateRange-, AutocompleteInput
-#' or none, vectors of length one will add a filter of this type for each column
-#' and NA will try to guess proper filters
+#' @param filters optional, adds filters for each column, types must be one of
+#' "Text", "Select", "Range", "Date", "Auto" or "" (can be abbreviated) to add a
+#' Text-, Select-, Range-, DateRange-, AutocompleteInput or none, vectors of
+#' length one will add a filter of this type for each column and NA will try to
+#' guess proper filters, can also contain nested lists specifying type and
+#' initial value (e.g. list(list(type = "T", value = "init"), NA, "T", ...))
 #' @param reset optional logical, specify whether to add a button to reset
 #' filters and sort buttons to initial values or not
 #' @param page_size optional integer, number of items per page, can be one of
@@ -126,7 +127,6 @@ dq_render_handsontable <- function(
   output <- session$output
 
   table_data <- data
-
   dqv <- shiny::reactiveValues()
 
   paged <- length(page_size) > 0L && any(page_size > 0L)
@@ -188,19 +188,22 @@ dq_render_handsontable <- function(
     dqv[[page_id]] <- df[1:n,]
   }
 
-  # fill filter values and detect proper values for NA
-  filters <- correct_filters(filters, shiny::isolate(dqv$full[, columns, drop = FALSE]))
-
   # render filter row and add observer for filters
   if (!is.null(filters)) {
     output$filters <- shiny::renderUI({
+      # add names(dq$full) dependency
+      if (TRUE || is.null(names(dqv$full))) {
+        # correct filters according to (new?) dataset
+        filters <<- correct_filters(filters, shiny::isolate(dqv$full[, columns, drop = FALSE]))
+      }
       filter_row(ns, dqv, filters, columns, sorting, reset)
     })
     shiny::observeEvent(get_filters(input), {
       f_vals <- get_filters(input)
       if (length(f_vals) == 0) return()
-      df <- text_filter(dqv$full[, columns, drop = FALSE], f_vals[sapply(f_vals, function(x) length(x) == 1L)])
-      dqv$reduced <- range_filter(df, f_vals[sapply(f_vals, function(x) length(x) == 2L)])
+      l <- vapply(f_vals, length, 0L)
+      df <- text_filter(dqv$full[, columns, drop = FALSE], f_vals[l == 1L])
+      dqv$reduced <- range_filter(df, f_vals[l == 2L])
       if (to_sort) {
         dqv$reduced <- sort_data(dqv$reduced, dqv$sorting)
       }
@@ -304,28 +307,26 @@ dq_render_handsontable <- function(
 add_scripts <- function(params, width, scroll) {
   if (width || scroll) {
     params$afterRender <- htmlwidgets::JS(
-      "function() {
-        var hider = $(this.rootElement).find('.wtHider');
-        var $filter = $(document.getElementById(this.rootElement.id + '-filters'));
-        var that = this;
-        $filter.ready(function() {
-          $filter.css('overflow', 'hidden');
-          var row = $filter.find('.row');
-          row.width(hider.width());",
-      if (width)
-        "var els = $filter.find('.form-group');
-         for (var i = 0; i < els.length; i++) {
-           $(els[i]).outerWidth($(that.getCell(0, i)).outerWidth());
-         }
-       });",
+      "function() {",
+      "  var hider = $(this.rootElement).find('.wtHider');",
+      "  var $filter = $('#' + this.rootElement.id + '-filters');",
+      "  $filter.css('overflow', 'hidden');",
+      "  var row = $filter.find('.row');",
+      "  row.width(hider.width());",
+      if (width) paste(
+        "  var els = $filter.find('.form-group');",
+        "  for (var i = 0; i < els.length; i++) {",
+        "    $(els[i]).outerWidth($(this.getCell(0, i)).outerWidth());",
+        "  }", sep = "\n"
+      ),
       "}"
     )
   }
   if (scroll) {
     params$afterScrollHorizontally <- htmlwidgets::JS(
       "function() {
-        var filter = document.getElementById(this.rootElement.id + '-filters');
-        filter.scrollLeft = $(this.rootElement).find('.wtHolder')[0].scrollLeft;
+        var $f = $('#' + this.rootElement.id + '-filters');
+        $f.scrollLeft($(this.rootElement).find('.wtHolder').scrollLeft());
       }"
     )
   }
