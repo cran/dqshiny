@@ -22,8 +22,8 @@ NULL
 
 dq_dep <- htmltools::htmlDependency(
   "dqshiny", "0.0.1", c(href = "dqshinyRes"),
-  script = "js/messageHandler.js",
-  stylesheet = "css/dqshiny.css"
+  script = "js/dqshiny.min.js",
+  stylesheet = "css/dqshiny.min.css"
 )
 
 selectize_dep <- htmltools::tagList(
@@ -60,7 +60,7 @@ jqueryui_dep <- htmltools::htmlDependency(
 )
 
 not_null <- function(vec) {
-  vec[!vapply(vec, is.null, TRUE)]
+  vec[vapply(vec, length, 0L) > 0L]
 }
 
 create_test_session <- function(id, input, output) {
@@ -110,4 +110,21 @@ as_date <- function(vec) {
 
 as_numeric <- function(vec) {
   suppressWarnings(as.numeric(vec))
+}
+
+as_id <- function(id, pre = NULL) {
+  id <- gsub("[^a-zA-Z0-9]", "", id)
+  id[!nzchar(id)] <- random_id(l = sum(!nzchar(id)))
+  if (length(pre) == 1L && is.character(pre)) paste0(pre, "-", id)
+  else id
+}
+
+random_id <- function(n = 8L, l = 1L) {
+  vapply(
+    seq(l), function(i) paste0(sample(letters, n, TRUE), collapse = ""), ""
+  )
+}
+
+escape <- function(str) {
+  gsub("(\\W)", "\\\\\\1", str)
 }

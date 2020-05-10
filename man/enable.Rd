@@ -16,7 +16,7 @@ toggle_state(ids, condition = NULL)
 \item{ids}{Character vector, id(s) of the element to enable/disable.}
 
 \item{condition}{Condition to be used for toggling the state (TRUE =
-disabled).}
+disabled), can be of length one or length of ids.}
 }
 \description{
 Those functions can be used to change an elements disabled
@@ -61,8 +61,9 @@ shinyApp(
 }
 }
 \seealso{
-Other js handler: \code{\link{add_class}},
-  \code{\link{hide}}
+Other js handler: 
+\code{\link{add_class}()},
+\code{\link{hide}()}
 }
 \author{
 richard.kunze

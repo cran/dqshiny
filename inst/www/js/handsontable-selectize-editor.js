@@ -22,8 +22,7 @@
   SelectizeEditor.prototype.createElements = function() {
     this.$body = $(document.body);
 
-    this.TEXTAREA = document.createElement("select");
-    this.$select = $(this.TEXTAREA);
+    this.TEXTAREA = document.createElement("TEXTAREA");
 
     Handsontable.dom.addClass(this.TEXTAREA, "handsontableInput");
 
@@ -40,6 +39,10 @@
     this.textareaParentStyle.display = "none";
 
     this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+
+    var select = document.createElement("SELECT");
+    this.TEXTAREA_PARENT.appendChild(select);
+    this.$select = $(select);
 
     this.instance.rootElement.appendChild(this.TEXTAREA_PARENT);
 
@@ -70,7 +73,6 @@
     var ctrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
     var sel = editor.selectize;
     var multiple = editor && sel.settings.mode == "multi";
-
     // Process only events that have been fired in the editor
     if (event.target.tagName !== "INPUT") {
       // except BACKSPACEs for deleting the last item since there won't be an INPUT if selectize is full

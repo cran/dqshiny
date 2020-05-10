@@ -1,3 +1,15 @@
+# dqshiny 0.0.4
+
+* Fix dqhot to remove filter and paging row if no longer needed.
+* Fix dqhot to correct filters before rendering.
+* Fix selectize editor copy&paste feature.
+* Add dq_drawer to easily build drawer elements.
+* Add dq_gallery to slide between contents.
+* Support vectorized conditions in toggle functions.
+* Fix filtering after table data update.
+* Fix autocomplete update issue #3
+* Add create parameter for autocomplete inputs #4
+
 # dqshiny 0.0.3
 
 * Fix unit test for new V8 (PR #1).

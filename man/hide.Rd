@@ -16,7 +16,7 @@ toggle(ids, condition = NULL)
 \item{ids}{Character vector, id(s) of the element to hide/show.}
 
 \item{condition}{Condition to be used for toggling the visibility (TRUE =
-visible).}
+visible), can be of length one or length of ids.}
 }
 \description{
 Those functions can be used to change an elements visibility
@@ -61,8 +61,9 @@ shinyApp(
 }
 }
 \seealso{
-Other js handler: \code{\link{add_class}},
-  \code{\link{enable}}
+Other js handler: 
+\code{\link{add_class}()},
+\code{\link{enable}()}
 }
 \author{
 richard.kunze
